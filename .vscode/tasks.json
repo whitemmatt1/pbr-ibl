@@ -14,11 +14,14 @@
 				"-I${workspaceFolder}/dependencies/include",
 				"-I${workspaceFolder}/dependencies/library",
 				"-I${workspaceFolder}/dependencies/glm",
+				"-I${workspaceFolder}/dependencies/KHR",
+				"-I${workspaceFolder}/dependencies/assimp",
 				"-L${workspaceFolder}/dependencies/library",
 				"${workspaceFolder}/*.cpp",
 				"${workspaceFolder}/glad.c",
 				"${workspaceFolder}/dependencies/library/stb_image.cpp",
 				"-lglfw.3.4",
+				"-lassimp.5.4.3",
 				"-o",
 				"${workspaceFolder}/opengl",
 				"-framework",
@@ -34,7 +37,7 @@
 				"-Wno-deprecated",
 			],
 			"options": {
-				"cwd": "${fileDirname}"
+				"cwd": "${workspaceFolder}"
 			},
 			"problemMatcher": [
 				"$gcc"
