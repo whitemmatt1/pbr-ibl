@@ -1,0 +1,41 @@
+# Compiled source files
+*.o
+*.so
+*.dll
+*.exe
+*.out
+
+# Build directories
+/build/
+/bin/
+/dist/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+
+# Dependency directories
+/node_modules/
+/venv/
+/__pycache__/
+
+# User-specific files
+*.swp
+*.bak
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+opengl
+opengl
