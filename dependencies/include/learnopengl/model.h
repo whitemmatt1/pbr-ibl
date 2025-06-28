@@ -202,11 +202,16 @@ private:
     }
 };
 
+std::string normalizePath(const std::string& path) {
+    std::string fixedPath = path;
+    std::replace(fixedPath.begin(), fixedPath.end(), '\\', '/');
+    return fixedPath;
+}
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
-    string filename = string(path);
-    filename = directory + '/' + filename;
+    string filename = normalizePath(string(path));
+    filename = normalizePath(directory + '/' + filename);
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
