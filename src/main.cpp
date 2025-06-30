@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "render_utils.h"
+#include "material.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -37,7 +38,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 int main() {
-	// Instantiate the GLFW window
+	// instantiate the GLFW window
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -48,7 +49,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-	// Create window object
+	// create window object
 	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     glfwMakeContextCurrent(window);
 
@@ -97,55 +98,25 @@ int main() {
     backgroundShader.use();
     backgroundShader.setInt("environmentMap", 0);
 
-    // TEXTURE LOADING
-    // RUSTED IRON TEXTURES
-    unsigned int ironAlbedo = loadTexture("assets/textures/rustediron/albedo.png");
-    unsigned int ironNormal = loadTexture("assets/textures/rustediron/normal.png");
-    unsigned int ironMetallic = loadTexture("assets/textures/rustediron/metallic.png");
-    unsigned int ironRoughness = loadTexture("assets/textures/rustediron/roughness.png");
-    unsigned int ironAo = loadTexture("assets/textures/rustediron/ao.png");
-    
-    // GOLD TEXTURES
-    unsigned int goldAlbedo = loadTexture("assets/textures/gold/albedo.png");
-    unsigned int goldNormal = loadTexture("assets/textures/gold/normal.png");
-    unsigned int goldMetallic = loadTexture("assets/textures/gold/metallic.png");
-    unsigned int goldRoughness = loadTexture("assets/textures/gold/roughness.png");
-    unsigned int goldAo = loadTexture("assets/textures/gold/ao.png");
+    // texture loading
+    textureData iron = loadPBRTextures("assets/textures/rustediron");
+    textureData gold = loadPBRTextures("assets/textures/gold");
+    textureData grass = loadPBRTextures("assets/textures/grass");
+    textureData plastic = loadPBRTextures("assets/textures/plastic");
+    textureData wall = loadPBRTextures("assets/textures/wall");
 
-    // GRASS TEXTURES
-    unsigned int grassAlbedo = loadTexture("assets/textures/grass/albedo.png");
-    unsigned int grassNormal = loadTexture("assets/textures/grass/normal.png");
-    unsigned int grassMetallic = loadTexture("assets/textures/grass/metallic.png");
-    unsigned int grassRoughness = loadTexture("assets/textures/grass/roughness.png");
-    unsigned int grassAo = loadTexture("assets/textures/grass/ao.png");
-
-    // PLASTIC TEXTURES
-    unsigned int plasticAlbedo = loadTexture("assets/textures/plastic/albedo.png");
-    unsigned int plasticNormal = loadTexture("assets/textures/plastic/normal.png");
-    unsigned int plasticMetallic = loadTexture("assets/textures/plastic/metallic.png");
-    unsigned int plasticRoughness = loadTexture("assets/textures/plastic/roughness.png");
-    unsigned int plasticAo = loadTexture("assets/textures/plastic/ao.png");
-
-    // WALL TEXTURES
-    unsigned int wallAlbedo = loadTexture("assets/textures/wall/albedo.png");
-    unsigned int wallNormal = loadTexture("assets/textures/wall/normal.png");
-    unsigned int wallMetallic = loadTexture("assets/textures/wall/metallic.png");
-    unsigned int wallRoughness = loadTexture("assets/textures/wall/roughness.png");
-    unsigned int wallAo = loadTexture("assets/textures/wall/ao.png");
-
-    // MODEL GUN TEXTURES
+    // model gun textures
     unsigned int modelAlbedo = loadTexture("assets/models/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga");
     unsigned int modelNormal = loadTexture("assets/models/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga");
     unsigned int modelMetallic = loadTexture("assets/models/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga");
     unsigned int modelRoughness = loadTexture("assets/models/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga");
 
-    // BATTEL TEXTURES
+    // barrel textures
     unsigned int barrelAlbedo = loadTexture("assets/models/barrel/barrel_BaseColor.png");
     unsigned int barrelNormal = loadTexture("assets/models/barrel/barrel_Normal.png");
     unsigned int barrelMetallic = loadTexture("assets/models/barrel/barrel_Metallic.png");
     unsigned int barrelRoughness = loadTexture("assets/models/barrel/barrel_Roughness.png");
     
-
     // load models
     Model modelGun("assets/models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
     Model modelBarrel("assets/models/barrel/Barrel_FBX.fbx");
@@ -173,12 +144,12 @@ int main() {
     // load HDR environment map
     stbi_set_flip_vertically_on_load(true);
     int width, height, nrComponents;
-    float *data = stbi_loadf("assets/hdr/newport_loft.hdr", &width, &height, &nrComponents, 0);
+    float *data = stbi_loadf("assets/hdr/garage.hdr", &width, &height, &nrComponents, 0);
     unsigned int hdrTexture;
     if (data) {
         glGenTextures(1, &hdrTexture);
         glBindTexture(GL_TEXTURE_2D, hdrTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -196,7 +167,7 @@ int main() {
     glGenTextures(1, &envCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
     for (unsigned int i = 0; i < 6; ++i) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 1024, 1024, 0, GL_RGB, GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -221,7 +192,7 @@ int main() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-    glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+    glViewport(0, 0, 1024, 1024); // don't forget to configure the viewport to the capture dimensions.
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     for (unsigned int i = 0; i < 6; ++i) {
         cubemapShader.setMat4("view", captureViews[i]);
@@ -260,7 +231,7 @@ int main() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
-    glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
+    glViewport(0, 0, 32, 32); // configure the viewport to the capture dimensions
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     for (unsigned int i = 0; i < 6; ++i) {
         irradianceShader.setMat4("view", captureViews[i]);
@@ -276,14 +247,13 @@ int main() {
     glGenTextures(1, &prefilterMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
     for (unsigned int i = 0; i < 6; ++i) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 256, 256, 0, GL_RGB, GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minification filter to mip_linear 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
     // run a quasi Monte Carlo simulation to generate a pre-filtered environment cubemap
@@ -297,8 +267,8 @@ int main() {
     unsigned int maxMipLevels = 5;
     for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
         // reisze framebuffer according to mip-level size.
-        unsigned int mipWidth = static_cast<unsigned int>(128 * std::pow(0.5, mip));
-        unsigned int mipHeight = static_cast<unsigned int>(128 * std::pow(0.5, mip));
+        unsigned int mipWidth = static_cast<unsigned int>(256 * std::pow(0.5, mip));
+        unsigned int mipHeight = static_cast<unsigned int>(256 * std::pow(0.5, mip));
         glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
         glViewport(0, 0, mipWidth, mipHeight);
@@ -376,7 +346,6 @@ int main() {
         pbrShader.setMat4("view", view);
         pbrShader.setVec3("camPos", camera.Position);
 
-
         // bind pre-computed IBL data
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
@@ -386,35 +355,15 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 
         // rusted iron
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, ironAlbedo);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, ironNormal);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, ironMetallic);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, ironRoughness);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, ironAo);
-
+        bindPBRTextures(iron);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
+        model = glm::translate(model, glm::vec3(-5.5, 0.0, 2.0));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         renderSphere();
 
         // gold
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, goldAlbedo);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, goldNormal);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, goldMetallic);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, goldRoughness);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, goldAo);
-
+        bindPBRTextures(gold);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
         pbrShader.setMat4("model", model);
@@ -422,60 +371,30 @@ int main() {
         renderSphere();
 
         // grass
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, grassAlbedo);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, grassNormal);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, grassMetallic);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, grassRoughness);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, grassAo);
-
+        bindPBRTextures(grass);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
+        model = glm::translate(model, glm::vec3(4.0, 0.0, 2.0));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        renderSphere();
+        renderCube();
 
         // plastic
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, plasticAlbedo);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, plasticNormal);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, plasticMetallic);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, plasticRoughness);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, plasticAo);
-
+        bindPBRTextures(plastic);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
+        model = glm::translate(model, glm::vec3(-0.5, 0.0, 2.0));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
         renderSphere();
 
         // wall
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, wallAlbedo);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, wallNormal);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, wallMetallic);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, wallRoughness);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, wallAo);
-
+        bindPBRTextures(wall);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
+        model = glm::translate(model, glm::vec3(6.0, 0.0, 2.0));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        renderSphere();
+        renderCube();
 
-        
         // model gun
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, modelAlbedo);
@@ -487,10 +406,9 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, modelRoughness);
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, whiteTexture); // use white texture for ao as the model doesn't have one
-
         
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(5.0f, 0.0f, 5.0f)); // Set position as needed
+        model = glm::translate(model, glm::vec3(5.0f, 0.0f, 15.0f)); // Set position as needed
         model = glm::scale(model, glm::vec3(0.05f)); // Set scale as needed
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         pbrShader.setMat4("model", model);
@@ -510,8 +428,8 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, whiteTexture);
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 5.0f)); // Set position as needed
-        model = glm::scale(model, glm::vec3(2.5f)); // Set scale as needed
+        model = glm::translate(model, glm::vec3(-5.0f, -10.0f, 15.0f));
+        model = glm::scale(model, glm::vec3(10.0f));
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         pbrShader.setMat4("model", model);
         pbrShader.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
@@ -536,7 +454,6 @@ int main() {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
-
 
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)

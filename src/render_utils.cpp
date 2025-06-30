@@ -5,9 +5,6 @@
 #include "stb_image.h"
 #include "render_utils.h"
 
-// ===========================================================================================================================
-//  Cubemap vertices
-// ===========================================================================================================================
 float vertices[] = {
     // back face
     -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
@@ -53,11 +50,6 @@ float vertices[] = {
     -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
 };
 
-// ===========================================================================================================================
-// Sphere Rendering
-// Renders a UV sphere using triangle strips. Initializes VAO/VBO/EBO on first call.
-// Uses 64 segments for both latitude and longitude for smoothness.
-// ===========================================================================================================================
 unsigned int sphereVAO = 0;
 unsigned int indexCount;
 void renderSphere() {
@@ -140,11 +132,6 @@ void renderSphere() {
     glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 }
 
-// ===========================================================================================================================
-// Cube Rendering
-// Renders a cube. Initializes VAO/VBO on first call and uploads vertex data.
-// Vertex attributes: position (3), normal (3), texcoord (2).
-// ===========================================================================================================================
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
 void renderCube() {
@@ -172,13 +159,6 @@ void renderCube() {
     glBindVertexArray(0);
 }
 
-// ===========================================================================================================================
-// Quad Rendering
-// Renders a 2D quad (plane) with position and texcoord attributes.
-// Initializes VAO/VBO on first call and uploads vertex data.
-// ===========================================================================================================================
-
-// render quad
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 void renderQuad() {
@@ -206,12 +186,6 @@ void renderQuad() {
     glBindVertexArray(0);
 }
 
-// ===========================================================================================================================
-// Texture Loading
-// Loads a texture from file using stb_image and uploads it to OpenGL.
-// Returns the OpenGL texture ID. Supports RGB, RGBA, and RED formats.
-// ===========================================================================================================================
-
 unsigned int loadTexture(char const * path) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -219,7 +193,7 @@ unsigned int loadTexture(char const * path) {
     int width, height, nrComponents;
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data) {
-        GLenum format = GL_RGB; // Default initialization
+        GLenum format = GL_RGB; // default initialization
         if (nrComponents == 1)
             format = GL_RED;
         else if (nrComponents == 3)
@@ -245,5 +219,3 @@ unsigned int loadTexture(char const * path) {
 
     return textureID;
 }
-
-
