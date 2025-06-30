@@ -39,6 +39,3 @@ cmake_install.cmake
 Makefile
 opengl
 opengl
-
-# assets
-*/hdr
