@@ -3,7 +3,7 @@
 ### This is my personal project on pbr rendering and image based lighting using OpenGL and C++.
 
 This was made using the tutorials from [LearnOpenGL](https://learnopengl.com) by Joey de Vries.
-Currently rebuilding from scratch to use ImGui and dynamically load and render models and textures in runtime, also hopefully be alot cleaner.
+Currently rebuilding from scratch to use ImGui and dynamically load and render models and textures at runtime, also hopefully be alot cleaner.
 
 ## Screenshots
 
